@@ -3,6 +3,6 @@ module.exports = {
     description: 'Receive help from the bot',
     public: true, 
     execute(ctx){
-        ctx.replyWithMarkdown('How to use JZM: \n/ytd link for download the audio from the video \n/music for see downloaded music');
+        ctx.replyWithMarkdown('How to use JZM: \n\n/ytd link \n_Download the audio from the video_ \n/music \n_See downloaded music_');
     }
 }
