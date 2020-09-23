@@ -15,7 +15,7 @@ module.exports = {
             ytdl.getInfo(ctx.state.command.args).then((info) => {
                 ytdl(ctx.state.command.args, { format: 'audioonly' })
                 .pipe(fs.createWriteStream(filename)).on('finish', () => {
-                    ctx.replyWithAudio({ source: filename, filename: info.title }).then((message) => {
+                    ctx.replyWithAudio({ source: filename, filename: info.title }, { title: info.title }).then((message) => {
                         jmongo.insertDocument('songs', { title: info.title, owner: ctx.from.id, file_id: message.audio.file_id, });
                         fs.unlink(filename, () => {});
                     });
