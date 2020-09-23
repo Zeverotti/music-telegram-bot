@@ -1,4 +1,6 @@
 const nanoid = require('nanoid');
+const JMongo = require('jmongo');
+const jmongo = new JMongo(process.env.DB_URL, process.env.DB_NAME);
 
 module.exports = {
     name: 'ytd',
@@ -9,12 +11,14 @@ module.exports = {
         const ytdl = require('ytdl-core');
 
         const filename = 'files/'+nanoid.nanoid()+'.mp4';
-        
-        ytdl(ctx.state.command.args, { format: 'audioonly' })
+        ytdl.getInfo(ctx.state.command.args).then((info) => {
+            ytdl(ctx.state.command.args, { format: 'audioonly' })
             .pipe(fs.createWriteStream(filename)).on('finish', () => {
-                ctx.replyWithAudio({ source: filename, filename: 'music-telegram-bot' }).then(() => {
+                ctx.replyWithAudio({ source: filename, filename: info.title }).then((message) => {
+                    jmongo.insertDocument('songs', { title: info.title, owner: ctx.from.id, file_id: message.audio.file_id, });
                     fs.unlink(filename, () => {});
                 });
             });
+        });
     }
 }
