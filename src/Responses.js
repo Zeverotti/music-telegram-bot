@@ -14,17 +14,32 @@ class defaultResponses{
 			const song_id = ctx.match[1].split('-')[1];
 			ctx.answerCbQuery();
 			jmongo.load('songs', { song_id: song_id }).then((result) => {
-				ctx.editMessageText(result.title, Extra.markup(Markup.inlineKeyboard(
-					[Markup.callbackButton('▶️ Riproduci', `play-${song_id}`)]
-				)))
+				ctx.editMessageText(result.title, Extra.markup(Markup.inlineKeyboard([
+					[Markup.callbackButton('▶️ Riproduci', `play-${song_id}`)],
+					[Markup.callbackButton('🗑 Elimina', `delete-${song_id}`)]
+				])))
 			})
 		})
 		telegraf.action(/^[play]+(-[^]*)?$/, (ctx) => {
 			const song_id = ctx.match[1].split('-')[1];
+			ctx.answerCbQuery();
 			jmongo.load('songs', { song_id: song_id }).then((result) => {
 				ctx.deleteMessage();
 				ctx.replyWithAudio(result.file_id);
 			})
+		})
+		telegraf.action(/^[delete]+(-[^]*)?$/, (ctx) => {
+			const song_id = ctx.match[1].split('-')[1];
+			ctx.answerCbQuery();
+			jmongo.deleteDocument('songs', { song_id: song_id }).then(() => {
+				jmongo.loadAll('songs', { owner: ctx.from.id }).then((result) => {
+					const buttons = [];
+					for(let i=0; i<result.length; i++){
+						buttons.push([Markup.callbackButton(result[i].title, `song-${result[i].song_id}`)]);
+					}
+					ctx.editMessageText('Ecco la tua musica', Extra.markup(Markup.inlineKeyboard(buttons)));
+				})
+			});
 		})
 
 		return telegraf;
