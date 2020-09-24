@@ -1,9 +1,30 @@
+const Telegraf = require('telegraf');
+const { Markup, Extra } = Telegraf;
+const JMongo = require('jmongo');
+const jmongo = new JMongo(process.env.DB_URL, process.env.DB_NAME);
+
 class defaultResponses{
 	constructor(telegraf){
 		telegraf.on('new_chat_members', (ctx) => {
 			if(ctx.botInfo.id===ctx.update.message.new_chat_member.id){
 				ctx.reply('Thanks for adding me to this group');
 			}	
+		})
+		telegraf.action(/^[song]+(-[^]*)?$/, (ctx) => {
+			const song_id = ctx.match[1].split('-')[1];
+			ctx.answerCbQuery();
+			jmongo.load('songs', { song_id: song_id }).then((result) => {
+				ctx.editMessageText(result.title, Extra.markup(Markup.inlineKeyboard(
+					[Markup.callbackButton('▶️ Riproduci', `play-${song_id}`)]
+				)))
+			})
+		})
+		telegraf.action(/^[play]+(-[^]*)?$/, (ctx) => {
+			const song_id = ctx.match[1].split('-')[1];
+			jmongo.load('songs', { song_id: song_id }).then((result) => {
+				ctx.deleteMessage();
+				ctx.replyWithAudio(result.file_id);
+			})
 		})
 
 		return telegraf;

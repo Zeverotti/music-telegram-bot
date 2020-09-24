@@ -16,7 +16,7 @@ module.exports = {
                 ytdl(ctx.state.command.args, { format: 'audioonly' })
                 .pipe(fs.createWriteStream(filename)).on('finish', () => {
                     ctx.replyWithAudio({ source: filename, filename: info.title }, { title: info.title, thumb: { url: 'https://i.imgur.com/DxFEJ9A.jpg' } }).then((message) => {
-                        jmongo.insertDocument('songs', { title: info.title, owner: ctx.from.id, file_id: message.audio.file_id, });
+                        jmongo.insertDocument('songs', { title: info.title, song_id: nanoid.nanoid().replace('-', ''), owner: ctx.from.id, file_id: message.audio.file_id, });
                         fs.unlink(filename, () => {});
                     });
                 });
